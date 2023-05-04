@@ -163,7 +163,7 @@ const App = () => {
   );
 
   useEffect(() => {
-    const defaultZoom = 3.5;
+    const defaultZoom = 5;
 
     void applyZoom(defaultZoom);
   }, [applyZoom, scanner]);
