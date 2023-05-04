@@ -58,15 +58,20 @@ const App = () => {
     alert(decodedText);
   };
 
+  const handleDocumentClick = (event: MouseEvent) => {
+    const decodedText = "example decoded text"; // replace with your actual decoded text
+    onHandleScanSuccess(decodedText);
+  };
+
   const handleClick = () => {
     controls.play();
   };
 
   useEffect(() => {
-    document.addEventListener("click", handleClick);
+    document.addEventListener("click", handleDocumentClick);
 
     return () => {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("click", handleDocumentClick);
     };
   }, []);
 
