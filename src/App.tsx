@@ -49,10 +49,12 @@ const App = () => {
   const [audio, _, controls] = useAudio({
     key: audioKey,
     src: ScannerSoundEffects.SUCCESS,
+    autoPlay: false,
+    controls: false,
   });
 
   const onHandleScanSuccess = (decodedText: string) => {
-    void controls.play();
+    controls.play();
     alert(decodedText);
   };
 
