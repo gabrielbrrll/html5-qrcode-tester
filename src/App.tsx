@@ -58,6 +58,18 @@ const App = () => {
     alert(decodedText);
   };
 
+  const handleClick = () => {
+    controls.play();
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, []);
+
   useEffect(() => {
     const fetchCameraDevices = async () => {
       try {
@@ -169,6 +181,7 @@ const App = () => {
           </option>
         ))}
       </select>
+      <button onClick={handleClick}>play audio</button>
       {/* <button onClick={stopCamera}>Stop camera</button> */}
       {isLoading && <div>Is loading</div>}
     </div>
