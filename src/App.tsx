@@ -152,6 +152,22 @@ const App = () => {
     }
   }, [enableScanner, scannerState]);
 
+  const applyZoom = useCallback(
+    async (zoomValue: number) => {
+      await scanner
+        ?.getRunningTrackCameraCapabilities()
+        .zoomFeature()
+        .apply(zoomValue);
+    },
+    [scanner]
+  );
+
+  useEffect(() => {
+    const defaultZoom = 3.5;
+
+    void applyZoom(defaultZoom);
+  }, [applyZoom, scanner]);
+
   const stopCamera = async () => {
     if (scanner && scannerState === Html5QrcodeScannerState.SCANNING) {
       await scanner?.stop();
