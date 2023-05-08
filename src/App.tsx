@@ -55,7 +55,6 @@ const App = () => {
 
   const onHandleScanSuccess = (decodedText: string) => {
     controls.play();
-    alert(decodedText);
   };
 
   const handleDocumentClick = (event: MouseEvent) => {
