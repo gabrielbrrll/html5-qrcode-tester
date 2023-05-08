@@ -24,7 +24,7 @@ export const defaultHtml5QrCodeConfigs: ScannerConfigs = {
   rememberLastUsedCamera: true,
   disableFlip: false,
   focusMode: "continuous",
-  defaultZoomValueIfSupported: 1,
+  defaultZoomValueIfSupported: 3.5,
   aspectRatio: 1,
   qrbox: {
     height: 350,
