@@ -134,13 +134,13 @@ const App = () => {
           ) {
             await startScanner();
 
-            if (isZoomSupported) {
-              alert("ZOOM SUPPORTED");
-              await html5QrCode
-                .getRunningTrackCameraCapabilities()
-                .zoomFeature()
-                .apply(zoomSupport?.default ?? 3.5);
-            }
+            setTimeout(async () => {
+              await html5QrCode.applyVideoConstraints({
+                // focusMode: "continuous", commented due to unsupported constraints error
+                // @ts-ignore limitation
+                advanced: [{ zoom: 3.5 }],
+              });
+            }, 2000);
 
             setIsLoading(false);
             setScanner(html5QrCode);
