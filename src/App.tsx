@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import { useAudio } from "react-use";
 import { ScannerSoundEffects } from "./base64";
+import useCheckZoomSupport from "./useCheckZoomSupport";
 
 interface ScannerConfigs
   extends Html5QrcodeCameraScanConfig,
@@ -25,7 +26,7 @@ export const defaultHtml5QrCodeConfigs: ScannerConfigs = {
   disableFlip: false,
   focusMode: "continuous",
   defaultZoomValueIfSupported: 3.5,
-  aspectRatio: 2,
+  aspectRatio: 1,
   qrbox: {
     height: 350,
     width: 350,
@@ -45,6 +46,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   const [audioKey, setAudioKey] = useState(0);
+
+  const { isZoomSupported, zoomSupport } = useCheckZoomSupport();
 
   const [audio, _, controls] = useAudio({
     key: audioKey,
@@ -130,6 +133,15 @@ const App = () => {
             scannerState === Html5QrcodeScannerState.SCANNING
           ) {
             await startScanner();
+
+            if (isZoomSupported) {
+              alert("ZOOM SUPPORTED");
+              await html5QrCode
+                .getRunningTrackCameraCapabilities()
+                .zoomFeature()
+                .apply(zoomSupport?.default ?? 3.5);
+            }
+
             setIsLoading(false);
             setScanner(html5QrCode);
             setScannerState(Html5QrcodeScannerState.SCANNING);
@@ -150,22 +162,6 @@ const App = () => {
       void enableScanner();
     }
   }, [enableScanner, scannerState]);
-
-  const applyZoom = useCallback(
-    async (zoomValue: number) => {
-      await scanner
-        ?.getRunningTrackCameraCapabilities()
-        .zoomFeature()
-        .apply(zoomValue);
-    },
-    [scanner]
-  );
-
-  useEffect(() => {
-    const defaultZoom = 5;
-
-    void applyZoom(defaultZoom);
-  }, [applyZoom, scanner]);
 
   const stopCamera = async () => {
     if (scanner && scannerState === Html5QrcodeScannerState.SCANNING) {
