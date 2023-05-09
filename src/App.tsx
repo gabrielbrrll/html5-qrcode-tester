@@ -25,7 +25,7 @@ export const defaultHtml5QrCodeConfigs: ScannerConfigs = {
   rememberLastUsedCamera: true,
   disableFlip: false,
   focusMode: "continuous",
-  defaultZoomValueIfSupported: 3.5,
+  defaultZoomValueIfSupported: 1,
   aspectRatio: 1,
   qrbox: {
     height: 350,
@@ -134,13 +134,12 @@ const App = () => {
           ) {
             await startScanner();
 
-            setTimeout(async () => {
-              await html5QrCode.applyVideoConstraints({
-                // focusMode: "continuous", commented due to unsupported constraints error
-                // @ts-ignore limitation
-                advanced: [{ zoom: 3.5 }],
-              });
-            }, 2000);
+            if (isZoomSupported) {
+              await html5QrCode
+                .getRunningTrackCameraCapabilities()
+                .zoomFeature()
+                .apply(3);
+            }
 
             setIsLoading(false);
             setScanner(html5QrCode);
