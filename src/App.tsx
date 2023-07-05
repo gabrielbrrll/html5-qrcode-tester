@@ -11,17 +11,18 @@ import "./App.css";
 import { useAudio } from "react-use";
 import { ScannerSoundEffects } from "./base64";
 import useCheckZoomSupport from "./useCheckZoomSupport";
+import { usePageVisibility } from "./usePageVisibility";
 
 interface ScannerConfigs
   extends Html5QrcodeCameraScanConfig,
-    Html5QrcodeConfigs {
+  Html5QrcodeConfigs {
   rememberLastUsedCamera: boolean;
   focusMode: string;
   defaultZoomValueIfSupported: number;
 }
 
 export const defaultHtml5QrCodeConfigs: ScannerConfigs = {
-  fps: 200,
+  fps: 10,
   rememberLastUsedCamera: true,
   disableFlip: false,
   focusMode: "continuous",
@@ -36,6 +37,11 @@ export const defaultHtml5QrCodeConfigs: ScannerConfigs = {
 
 type CameraId = CameraDevice["id"];
 
+const isIos = () => {
+  const userAgent = window.navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(userAgent);
+};
+
 const App = () => {
   const [scannerState, setScannerState] = useState(
     Html5QrcodeScannerState.NOT_STARTED
@@ -46,8 +52,12 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   const [audioKey, setAudioKey] = useState(0);
+  const [showTapScreen, setShowTapScreen] = useState(false);
+  const [tapScreenTapCount, setTapScreenTapCount] = useState(0);
 
   const { isZoomSupported, zoomSupport } = useCheckZoomSupport();
+
+  const isPageVisible = usePageVisibility();
 
   const [audio, _, controls] = useAudio({
     key: audioKey,
@@ -144,6 +154,7 @@ const App = () => {
             setIsLoading(false);
             setScanner(html5QrCode);
             setScannerState(Html5QrcodeScannerState.SCANNING);
+            showOverlayOnFirstLoad(html5QrCode);
           }
         }
       } catch (err) {
@@ -184,9 +195,79 @@ const App = () => {
     await enableScanner(cameraId);
   };
 
+  const showOverlayOnFirstLoad = useCallback(
+    (scanner: Html5Qrcode | null) => {
+      let timeout: ReturnType<typeof setTimeout> | null = null;
+
+      if (isIos()) {
+        timeout = setTimeout(() => {
+          if (tapScreenTapCount === 0) {
+            setShowTapScreen(true);
+            scanner?.pause();
+            setScannerState(Html5QrcodeScannerState.PAUSED);
+          }
+        }, 300);
+      }
+
+      return () => {
+        if (timeout !== null) {
+          clearTimeout(timeout);
+        }
+      };
+    },
+    [tapScreenTapCount]
+  );
+  const closeOverlay = useCallback(() => {
+    if (scanner && scannerState === Html5QrcodeScannerState.PAUSED) {
+      scanner.resume();
+      setScannerState(Html5QrcodeScannerState.SCANNING);
+    }
+
+    setShowTapScreen(false);
+    setTapScreenTapCount((count) => count + 1);
+  }, [scanner, scannerState]);
+
+  /**
+     * FOR IOS only atm
+     *
+     * This is to bypass ios audio autoplay restrictions
+     * We show a tap to scan screen before allowing
+     * scanning procedures
+     *
+     * This will not close camera -> it should just
+     * pause it disallowing any reading
+     */
+  const showOverlayWhenInactive = useCallback(() => {
+    if (isIos()) {
+      if (!isPageVisible && !showTapScreen) {
+        if (scanner && scannerState === Html5QrcodeScannerState.SCANNING) {
+          scanner.pause();
+          setScannerState(Html5QrcodeScannerState.PAUSED);
+        }
+        setShowTapScreen(true);
+      }
+    }
+  }, [
+    isPageVisible,
+    scanner,
+    scannerState,
+    showTapScreen,
+  ]);
+
+  /**
+       * should call overlay function when
+       * page is not visible
+       *
+       * @usePageVisibility
+       */
+  useEffect(() => {
+    showOverlayWhenInactive();
+  }, [showOverlayWhenInactive]);
+
   return (
     <div className="App">
       <h1>Scanner app proto</h1>
+      {showTapScreen ? <div id="overlay" onClick={closeOverlay}>Tap to Scan</div> : null}
       <div id="qr-scanner"></div>
       {audio}
       <select value={activeCameraId} onChange={handleCameraChange}>
