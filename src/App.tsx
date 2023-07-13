@@ -8,7 +8,7 @@ import { Html5QrcodeConfigs } from "html5-qrcode/esm/html5-qrcode";
 import { useCallback, useEffect, useState } from "react";
 
 import "./App.css";
-import { useAudio } from "react-use";
+import { useAudio, useIdle } from "react-use";
 import { ScannerSoundEffects } from "./base64";
 import useCheckZoomSupport from "./useCheckZoomSupport";
 import { usePageVisibility } from "./usePageVisibility";
@@ -56,6 +56,8 @@ const App = () => {
   const [tapScreenTapCount, setTapScreenTapCount] = useState(0);
 
   const { isZoomSupported, zoomSupport } = useCheckZoomSupport();
+  const idle = useIdle(60 * 1000 * 5);
+
 
   const isPageVisible = usePageVisibility();
 
@@ -264,6 +266,24 @@ const App = () => {
     showOverlayWhenInactive();
   }, [showOverlayWhenInactive]);
 
+
+    //show tap to screen overlay in ipad when idle for 5 minutes
+    const showOverlayWhenIdle = useCallback(() => {
+      if (isIos()) {
+          if (idle && !showTapScreen) {
+              if (scanner && scannerState === Html5QrcodeScannerState.SCANNING) {
+                  scanner.pause();
+                  setScannerState(Html5QrcodeScannerState.PAUSED);
+              }
+              setShowTapScreen(true);
+          }
+      }
+  }, [idle, scanner, scannerState, showTapScreen]);
+
+  useEffect(() => {
+    if (idle) showOverlayWhenIdle();
+}, [idle, showOverlayWhenIdle]);
+
   return (
     <div className="App">
       <h1>Scanner app proto</h1>
@@ -277,7 +297,7 @@ const App = () => {
           </option>
         ))}
       </select>
-      <button onClick={handleClick}>play audio</button>
+      {/* <button onClick={handleClick}>play audio</button> */}
       {/* <button onClick={stopCamera}>Stop camera</button> */}
       {isLoading && <div>Is loading</div>}
     </div>
