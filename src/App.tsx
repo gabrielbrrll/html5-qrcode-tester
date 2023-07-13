@@ -72,22 +72,22 @@ const App = () => {
     controls.play();
   };
 
-  const handleDocumentClick = (event: MouseEvent) => {
-    const decodedText = "example decoded text"; // replace with your actual decoded text
-    onHandleScanSuccess(decodedText);
-  };
+  // const handleDocumentClick = (event: MouseEvent) => {
+  //   const decodedText = "example decoded text"; // replace with your actual decoded text
+  //   onHandleScanSuccess(decodedText);
+  // };
 
   const handleClick = () => {
     controls.play();
   };
 
-  useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
+  // useEffect(() => {
+  //   document.addEventListener("click", handleDocumentClick);
 
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, []);
+  //   return () => {
+  //     document.removeEventListener("click", handleDocumentClick);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const fetchCameraDevices = async () => {
@@ -297,7 +297,7 @@ const App = () => {
           </option>
         ))}
       </select>
-      {/* <button onClick={handleClick}>play audio</button> */}
+      <button onClick={handleClick}>play audio</button>
       {/* <button onClick={stopCamera}>Stop camera</button> */}
       {isLoading && <div>Is loading</div>}
     </div>
